@@ -16,94 +16,10 @@
 #include <stdint.h>
 #include <string>
 
-struct sdl_error : public std::runtime_error {
-  sdl_error(const char *s) : std::runtime_error(s) {}
-};
+#include "MSDCore/VR2.hh"
+#include "MSDCore/exceptions.hh"
 
-struct VR2 {
-  int32_t x, y;
-};
-
-VR2 operator+(const VR2 &a, const VR2 &b) { return {a.x + b.x, a.y + b.y}; }
-
-VR2 operator*(int32_t a, const VR2 &b) { return {a * b.x, a * b.y}; }
-
-int32_t abs(VR2 v) { return v.x * v.x + v.y * v.y; }
-
-class Circle {
-  VR2 xy_;
-  int32_t r_;
-  bool show_gui = false, show_ = true;
-  std::default_random_engine gen;
-  std::uniform_int_distribution<> dist{-50, 50};
-
-public:
-  Circle(VR2 xy, uint32_t r) : xy_(xy), r_(r), gen(std::random_device{}()) {}
-
-  static int32_t po(const VR2 &x, const VR2 &y) {
-    auto dx = y.x - x.x, dy = y.y - x.y;
-    return dx * dx + dy * dy;
-    // return dx * dx + 4 * dy * dy;
-    // return (std::abs(dx) + std::abs(dy)) * (std::abs(dx) + std::abs(dy));
-    // return std::abs(dx*dy);
-    // return (std::abs(dx) + std::abs(4 * dy)) *
-    //        (std::abs(dx) + std::abs(4 * dy));
-  }
-
-  void Show(SDL_Renderer *s) {
-    if (!show_)
-      return;
-    auto sqrr = r_ * r_;
-    SDL_RenderDrawPoint(s, xy_.x, xy_.y); // <-- Center
-    VR2 cur = VR2{r_, 0};                 // delta
-    VR2 O = {0, 0};
-    while (cur.x > 0) {
-      auto sx = cur + VR2{-1, 0}, sy = cur + VR2{0, 1};
-      // std::cout << std::abs(po(sx, O) - sqrr) << " "
-      //           << std::abs(po(sy, O) - sqrr) << "\n";
-
-      SDL_RenderDrawPoint(s, xy_.x + cur.x, xy_.y + cur.y);
-      SDL_RenderDrawPoint(s, xy_.x - cur.x, xy_.y + cur.y);
-      SDL_RenderDrawPoint(s, xy_.x + cur.x, xy_.y - cur.y);
-      SDL_RenderDrawPoint(s, xy_.x - cur.x, xy_.y - cur.y);
-      //
-      // SDL_RenderDrawPoint(s, xy_.x + cur.y, xy_.y + cur.x);
-      // SDL_RenderDrawPoint(s, xy_.x - cur.y, xy_.y + cur.x);
-      // SDL_RenderDrawPoint(s, xy_.x + cur.y, xy_.y - cur.x);
-      // SDL_RenderDrawPoint(s, xy_.x - cur.y, xy_.y - cur.x);
-
-      if (std::abs(po(sx, O) - sqrr) < std::abs(po(sy, O) - sqrr))
-        cur = sx;
-      else
-        cur = sy;
-    }
-  }
-
-  void GUI_Show() {
-    if (!show_gui)
-      return;
-    ImGui::Begin("Circle", &show_gui);
-    ImGui::SliderInt("Radius", &r_, 0, 1000);
-    ImGui::SliderInt2("Coordinates", &xy_.x, -500, 500);
-    ImGui::Checkbox("Show", &show_);
-    if (ImGui::Button("Random move")) {
-      MoveTo({dist(gen), dist(gen)});
-    }
-    ImGui::End();
-  }
-
-  bool &GetGuiTrigger() { return show_gui; }
-
-  uint32_t GetRadius() const { return r_; }
-
-  VR2 GetPostion() const { return xy_; }
-
-  void SetRadius(uint32_t r) { r_ = r; }
-
-  void SetPosition(const VR2 &pos) { xy_ = pos; }
-
-  void MoveTo(const VR2 &dlta) { xy_ = xy_ + dlta; }
-};
+#include "Figures/Circle.hh"
 
 class App {
   SDL_Window *win_ =
@@ -114,7 +30,7 @@ class App {
   float color_[3] = {0.f, 0.f, 0.f};
   char windowtitle_[255] = "Lab 1";
   bool show_settings_ = false;
-  Circle *c_ = new Circle({150, 150}, 50);
+  Figure::Circle *c_ = new Figure::Circle({150, 150}, 50);
 
 public:
   App() {

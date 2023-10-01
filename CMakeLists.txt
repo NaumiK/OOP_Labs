@@ -14,5 +14,7 @@ message(STATUS "Collected labs: ${LABLIST}")
 foreach(LAB ${LABLIST})
   target_include_directories(${LAB} PRIVATE ${CMAKE_SOURCE_DIR}/include)
   target_include_directories(${LAB} PRIVATE ${CMAKE_SOURCE_DIR}/include/${LAB}/)
+  
+  target_link_libraries(${LAB} PRIVATE ${LIBLIST})
 endforeach(LAB ${LABLIST})
 

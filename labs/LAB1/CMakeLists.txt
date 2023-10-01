@@ -1,5 +1,6 @@
 set(SRCS
   main.cc
+  Figures/Circle.cc
   )
 
 find_package(SDL2 CONFIG REQUIRED COMPONENTS SDL2 SDL2main)
