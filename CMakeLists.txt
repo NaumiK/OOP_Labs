@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(OOP_Labs VERSION 0.0)
 
+set(CMAKE_CXX_STANDARD 20 REQUIRED)
 
 add_subdirectory(libs)
 message(STATUS "Collected libs: ${LIBLIST}")

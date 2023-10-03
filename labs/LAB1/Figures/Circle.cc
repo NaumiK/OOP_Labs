@@ -4,11 +4,11 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
 
-Figure::Circle::Circle(VR2 xy, uint32_t r)
-    : xy_(xy), r_(r), gen(std::random_device{}()) {}
+Figure::Circle::Circle(int32_t x, int32_t y, uint32_t r)
+    : x_(x), y_(y), r_(r) {}
 
-int32_t Figure::Circle::po(const VR2 &x, const VR2 &y) {
-  auto dx = y.x - x.x, dy = y.y - x.y;
+int32_t Figure::Circle::po(int32_t ax, int32_t ay, int32_t bx, int32_t by) {
+  auto dx = bx - ax, dy = by - ay;
   return dx * dx + dy * dy;
   // return dx * dx + 4 * dy * dy;
   // return (std::abs(dx) + std::abs(dy)) * (std::abs(dx) + std::abs(dy));
@@ -18,34 +18,33 @@ int32_t Figure::Circle::po(const VR2 &x, const VR2 &y) {
 }
 
 void Figure::Circle::Show(SDL_Renderer *s) {
-  if (!show_)
-    return;
-  auto sqrr = r_ * r_;
-  SDL_RenderDrawPoint(s, xy_.x, xy_.y); // <-- Center
-  VR2 cur = VR2{r_, 0};                 // delta
-  VR2 O = {0, 0};
-  while (cur.x > 0) {
-    auto sx = cur + VR2{-1, 0}, sy = cur + VR2{0, 1};
+  int32_t sqrr = r_ * r_;
+  SDL_RenderDrawPoint(s, x_, y_); // <-- Center
+  int32_t curx = r_, cury = 0;
+  while (curx >= cury) {
+    auto sxx = curx - 1, sxy = cury, syx = curx, syy = cury + 1;
     // std::cout << std::abs(po(sx, O) - sqrr) << " "
     //           << std::abs(po(sy, O) - sqrr) << "\n";
 
-    SDL_RenderDrawPoint(s, xy_.x + cur.x, xy_.y + cur.y);
-    SDL_RenderDrawPoint(s, xy_.x - cur.x, xy_.y + cur.y);
-    SDL_RenderDrawPoint(s, xy_.x + cur.x, xy_.y - cur.y);
-    SDL_RenderDrawPoint(s, xy_.x - cur.x, xy_.y - cur.y);
+    SDL_RenderDrawPoint(s, x_ + curx, y_ + cury);
+    SDL_RenderDrawPoint(s, x_ - curx, y_ + cury);
+    SDL_RenderDrawPoint(s, x_ + curx, y_ - cury);
+    SDL_RenderDrawPoint(s, x_ - curx, y_ - cury);
     //
-    // SDL_RenderDrawPoint(s, xy_.x + cur.y, xy_.y + cur.x);
-    // SDL_RenderDrawPoint(s, xy_.x - cur.y, xy_.y + cur.x);
-    // SDL_RenderDrawPoint(s, xy_.x + cur.y, xy_.y - cur.x);
-    // SDL_RenderDrawPoint(s, xy_.x - cur.y, xy_.y - cur.x);
+    SDL_RenderDrawPoint(s, x_ + cury, y_ + curx);
+    SDL_RenderDrawPoint(s, x_ - cury, y_ + curx);
+    SDL_RenderDrawPoint(s, x_ + cury, y_ - curx);
+    SDL_RenderDrawPoint(s, x_ - cury, y_ - curx);
 
-    if (std::abs(po(sx, O) - sqrr) < std::abs(po(sy, O) - sqrr))
-      cur = sx;
+    if (std::abs(po(sxx, sxy, 0, 0) - sqrr) <
+        std::abs(po(syx, syy, 0, 0) - sqrr))
+      curx = sxx, cury = sxy;
     else
-      cur = sy;
+      curx = syx, cury = syy;
   }
 }
 
+#if 0
 void Figure::Circle::GUI_Show() {
   if (!show_gui)
     return;
@@ -60,13 +59,19 @@ void Figure::Circle::GUI_Show() {
 }
 
 bool &Figure::Circle::GetGuiTrigger() { return show_gui; }
+#endif
 
 uint32_t Figure::Circle::GetRadius() const { return r_; }
 
+int32_t Figure::Circle::GetX() const { return x_; }
+int32_t Figure::Circle::GetY() const { return y_; }
+
+#if 0
 VR2 Figure::Circle::GetPostion() const { return xy_; }
+#endif
 
 void Figure::Circle::SetRadius(uint32_t r) { r_ = r; }
 
-void Figure::Circle::SetPosition(const VR2 &pos) { xy_ = pos; }
+void Figure::Circle::SetPosition(int32_t x, int32_t y) { x_ = x, y_ = y; }
 
-void Figure::Circle::MoveTo(const VR2 &dlta) { xy_ = xy_ + dlta; }
+void Figure::Circle::MoveTo(int32_t dx, int32_t dy) { x_ += dx, y_ += dy; }
