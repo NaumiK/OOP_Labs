@@ -36,6 +36,13 @@ class App final {
   bool show_c_gui_ = false, show_c_ = true;
   Figure::Circle *c_ = new Figure::Circle(150, 150, 50);
 
+  bool show_g_gui_ = false, show_g_ = true;
+  Figure::ManhattanCircle *g_ = new Figure::ManhattanCircle[3]{
+      {80, 80, 80}, {160, 80, 80}, {240, 80, 80}};
+  size_t g_size_ = 3;
+  int32_t dxy_[2]{};
+  float alpha_ = 0;
+
 public:
   App() : gen(std::random_device{}()) {
     if (win_ == NULL)
@@ -61,6 +68,7 @@ public:
 
     delete mc_;
     delete c_;
+    delete[] g_;
 
     SDL_DestroyRenderer(ren_);
     SDL_DestroyWindow(win_);
@@ -163,6 +171,23 @@ private:
     ImGui::End();
   }
 
+  void GuiGroup(bool &show_gui, bool &show, Figure::ManhattanCircle *&c,
+                size_t size) {
+    if (!show_gui)
+      return;
+    ImGui::Begin("Group", &show_gui);
+    ImGui::SliderInt2("Moving vector", dxy_, -100, 100);
+    if (ImGui::Button("Move"))
+      for (auto i = c, ei = c + size; i != ei; ++i)
+        i->MoveTo(dxy_[0], dxy_[1]);
+    ImGui::SliderFloat("Angle", &alpha_, -2 * std::numbers::pi, 2 * std::numbers::pi);
+    if (ImGui::Button("Rotate"))
+      for (auto i = c, ei = c + size; i != ei; ++i)
+        i->Rotate(alpha_);
+    ImGui::Checkbox("Show", &show);
+    ImGui::End();
+  }
+
   void imGuiRender() {
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -176,6 +201,7 @@ private:
       if (ImGui::BeginMenu("Figures")) {
         ImGui::MenuItem("Circle", nullptr, &show_c_gui_);
         ImGui::MenuItem("ManhattanCircle", nullptr, &show_mc_gui_);
+        ImGui::MenuItem("Group", nullptr, &show_g_gui_);
         ImGui::EndMenu();
       }
       ImGui::EndMainMenuBar();
@@ -190,6 +216,7 @@ private:
     }
     GuiManhattanCircle(show_mc_gui_, show_mc_, mc_);
     GuiCircle(show_c_gui_, show_c_, c_);
+    GuiGroup(show_g_gui_, show_g_, g_, g_size_);
     ImGui::Render();
   }
 
@@ -203,6 +230,10 @@ private:
       mc_->Show(ren_);
     if (show_c_ && c_ != nullptr)
       c_->Show(ren_);
+    if (show_g_)
+      for (auto i = g_, ei = g_ + g_size_; i != ei; ++i)
+        if (i != nullptr)
+          i->Show(ren_);
     // mc_->Rotate(0.1);
 
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
