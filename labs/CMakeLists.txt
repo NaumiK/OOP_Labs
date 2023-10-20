@@ -1,5 +1,6 @@
 set(LABLIST
   LAB1
+  LAB2
   test
   )
 

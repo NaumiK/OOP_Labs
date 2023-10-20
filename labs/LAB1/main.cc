@@ -2,8 +2,8 @@
 #include <SDL_events.h>
 #include <SDL_render.h>
 #include <SDL_surface.h>
-
 #include <SDL_video.h>
+
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>

@@ -5,9 +5,12 @@
 
 struct VR2 {
   int32_t x, y;
+  VR2 operator+=(const VR2 &rhs);
+  VR2 operator-=(const VR2 &rhs);
 };
 
 VR2 operator+(const VR2 &a, const VR2 &b);
+VR2 operator-(const VR2 &a, const VR2 &b);
 
 VR2 operator*(int32_t a, const VR2 &b);
 
