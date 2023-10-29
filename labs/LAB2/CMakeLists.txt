@@ -1,7 +1,15 @@
 set(SRCS
   main.cc
-  Figures/Circle.cc
-  Figures/ManhattanCircle.cc
+
+  Figure/Circle.cc
+  Figure/ManhattanCircle.cc
+  Figure/Ring.cc
+  Figure/PictogramOfTheAncientGods.cc
+
+  FigureGui/CircleGui.cc
+  FigureGui/ManhattanCircleGui.cc
+  FigureGui/RingGui.cc
+  FigureGui/PictogramOfTheAncientGodsGui.cc
   )
 
 find_package(SDL2 CONFIG REQUIRED COMPONENTS SDL2 SDL2main)

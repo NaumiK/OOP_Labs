@@ -1,10 +1,10 @@
 #ifndef LAB2_FIGURES_SQUARE_HH
 #define LAB2_FIGURES_SQUARE_HH
-#include "TFigure.hh"
+#include "Rotateable.hh"
 #include <SDL_render.h>
 
 namespace Figure {
-class ManhattanCircle : public TFigure {
+class ManhattanCircle final : public Rotateable {
   VR2 O_;
   int32_t r_;
   double alpha_ = 0;
@@ -16,7 +16,7 @@ public:
 
   void Show(SDL_Renderer *s) override;
   void MoveTo(VR2 v) override;
-  void Rotate(double da);
+  void Rotate(double da) override;
 
   int32_t GetRadius() const;
   VR2 GetPosition() const;

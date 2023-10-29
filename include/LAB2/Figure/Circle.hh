@@ -6,7 +6,7 @@
 #include "TFigure.hh"
 
 namespace Figure {
-class Circle : public TFigure {
+class Circle final : public TFigure {
   VR2 O_;
   int32_t r_;
 

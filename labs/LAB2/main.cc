@@ -1,131 +1,25 @@
-#include "Figures/Circle.hh"
-#include "Figures/ManhattanCircle.hh"
-#include "Figures/TFigure.hh"
+#include "Figure/PictogramOfTheAncientGods.hh"
+#include "Figure/Ring.hh"
 #include "MSDCore/exceptions.hh"
+#include "FigureGui/CircleGui.hh"
+#include "FigureGui/ManhattanCircleGui.hh"
+#include "FigureGui/RingGui.hh"
+#include "FigureGui/PictogramOfTheAncientGodsGui.hh"
+
 #include <SDL2/SDL.h>
 #include <SDL_events.h>
 #include <SDL_render.h>
 #include <SDL_surface.h>
 #include <SDL_video.h>
+
 #include <iostream>
-#include <list>
 #include <memory>
 #include <numbers>
 #include <queue>
-#include <set>
 
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
-
-class FigureGui {
-public:
-  bool show_ = true, show_gui_ = false;
-
-public:
-  virtual Figure::TFigure *getFig() = 0;
-
-  virtual void Show() = 0;
-  virtual ~FigureGui() = default;
-};
-
-class CircleGui final : public FigureGui {
-  Figure::Circle *&fig_;
-  std::default_random_engine gen;
-  std::uniform_int_distribution<> dist{-50, 50};
-
-public:
-  CircleGui(Figure::Circle *&fig) : fig_(fig), gen(std::random_device{}()) {}
-  Figure::TFigure *getFig() override { return fig_; }
-  void Show() override {
-    if (!show_gui_)
-      return;
-    ImGui::Begin("Circle", &show_gui_);
-    if (fig_ != nullptr) {
-      int32_t r = fig_->GetRadius();
-      VR2 xy = fig_->GetPosition();
-      ImGui::SliderInt("Radius", &r, 0, 1000);
-      ImGui::SliderInt2("Coordinates", &xy.x, -500, 500);
-      ImGui::Checkbox("Show", &show_);
-      fig_->SetRadius(r);
-      fig_->SetPosition(xy);
-      if (ImGui::Button("Random move")) {
-        fig_->MoveTo({dist(gen), dist(gen)});
-      }
-    }
-    if (ImGui::Button("Create new object")) {
-      auto *tmp = new Figure::Circle({150, 150}, 50);
-      std::swap(tmp, fig_);
-      delete tmp;
-    }
-    ImGui::End();
-  }
-};
-
-class ManhtattanCircleGui final : public FigureGui {
-  Figure::ManhattanCircle *&fig_;
-  std::default_random_engine gen;
-  std::uniform_int_distribution<> dist{-50, 50};
-
-public:
-  ManhtattanCircleGui(Figure::ManhattanCircle *&fig)
-      : fig_(fig), gen(std::random_device{}()) {}
-  Figure::TFigure *getFig() override { return fig_; }
-  void Show() override {
-    if (!show_gui_)
-      return;
-    ImGui::Begin("Manhattan Circle", &show_gui_);
-    if (fig_ != nullptr) {
-      int32_t r = fig_->GetRadius();
-      VR2 xy = fig_->GetPosition();
-      float a = fig_->GetAngle();
-      ImGui::SliderInt("Radius", &r, 0, 1000);
-      ImGui::SliderInt2("Coordinates", &xy.x, -500, 500);
-      ImGui::Checkbox("Show", &show_);
-      ImGui::SliderFloat("Angle", &a, 0, 2 * std::numbers::pi);
-      fig_->SetRadius(r);
-      fig_->SetPosition(xy);
-      fig_->SetAngle(a);
-      if (ImGui::Button("Random move")) {
-        fig_->MoveTo({dist(gen), dist(gen)});
-      }
-      if (ImGui::Button("Delete object")) {
-        delete fig_;
-        fig_ = nullptr;
-      }
-    }
-    if (ImGui::Button("Create new object")) {
-      auto *tmp = new Figure::ManhattanCircle({150, 150}, 50);
-      std::swap(tmp, fig_);
-      delete tmp;
-    }
-    ImGui::End();
-  }
-};
-
-struct FigureList {
-  std::list<
-      std::pair<std::shared_ptr<Figure::TFigure>, std::shared_ptr<FigureGui>>>
-      fig_;
-  bool show_insert_ = false;
-
-  void insert() {
-    ImGui::Begin("insert", &show_insert_);
-    std::vector<std::string> items = {"GGGG", "HHHH",       "IIII", "JJJJ",
-                                      "KKKK", "LLLLLLL",    "MMMM", "OOOOOOO",
-                                      "PPPP", "QQQQQQQQQQ", "RRR",  "SSSS"};
-    static std::string current_item = "";
-    if (ImGui::BeginCombo("WTF", current_item.c_str())) {
-      for (auto &i: items)
-        if (ImGui::Selectable(i.c_str()))
-          current_item = i;
-      ImGui::EndCombo();
-    }
-    ImGui::Text("%s", current_item.c_str());
-
-    ImGui::End();
-  }
-};
 
 class App final {
   bool run_ = true;
@@ -138,12 +32,24 @@ class App final {
   float color_[3] = {0.f, 0.f, 0.f};
   char windowtitle_[255] = "Lab 1";
 
-  FigureList fl_;
+  Figure::Circle *c_ = new Figure::Circle({150, 150}, 50);
+  FigureGui::CircleGui gc_;
 
-  std::queue<std::shared_ptr<Figure::TFigure>> rq_;
+  Figure::ManhattanCircle *mc_ = new Figure::ManhattanCircle({150, 150}, 50);
+  FigureGui::ManhtattanCircleGui gmc_;
+
+  Figure::Ring *r_ = new Figure::Ring({150, 200}, 50, 10);
+  FigureGui::RingGui gr_;
+
+  Figure::PictogramOfTheAncientGods *potag_ =
+      new Figure::PictogramOfTheAncientGods({150, 150}, 50, 0);
+  FigureGui::PictogramOfTheAncientGodsGui gpotag_;
+
+  std::queue<Figure::TFigure *> rq_;
 
 public:
-  App() {
+  App() : gc_(c_), gmc_(mc_), gr_(r_), gpotag_(potag_) {
+    std::cout << "App()\n";
     if (win_ == NULL)
       throw sdl_error("SDL_CreateWindow error");
     if (ren_ == NULL)
@@ -184,12 +90,8 @@ private:
                            static_cast<uint8_t>(color_[2] * 255), 0xFF);
     SDL_RenderClear(ren_);
     SDL_SetRenderDrawColor(ren_, 0xFF, 0xFF, 0xFF, 0xFF);
-    // for (; !rq_.empty(); rq_.pop())
-    //   rq_.front()->Show(ren_);
-    while (!rq_.empty()) {
+    for (; !rq_.empty(); rq_.pop())
       rq_.front()->Show(ren_);
-      rq_.pop();
-    }
 
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
 
@@ -205,8 +107,12 @@ private:
         ImGui::MenuItem("Settings", nullptr, &show_settings_);
         ImGui::EndMenu();
       }
-      if (ImGui::BeginMenu("List")) {
-        ImGui::MenuItem("insert", nullptr, &fl_.show_insert_);
+      if (ImGui::BeginMenu("Figures")) {
+        ImGui::MenuItem("Circle", nullptr, &gc_.show_gui_);
+        ImGui::MenuItem("ManhattanCircle", nullptr, &gmc_.show_gui_);
+        ImGui::MenuItem("Ring", nullptr, &gr_.show_gui_);
+        ImGui::MenuItem("Pictogram of the ancient gods", nullptr,
+                        &gpotag_.show_gui_);
         ImGui::EndMenu();
       }
       ImGui::EndMainMenuBar();
@@ -219,14 +125,21 @@ private:
         SDL_SetWindowTitle(win_, windowtitle_);
       ImGui::End();
     }
-    if (fl_.show_insert_)
-      fl_.insert();
+    gc_.Show();
+    gmc_.Show();
+    gr_.Show();
+    gpotag_.Show();
     ImGui::Render();
   }
   void update() {
-    auto c = std::make_shared<Figure::ManhattanCircle>(VR2{150, 150}, 50);
-    c->Rotate(std::numbers::pi / 6);
-    rq_.push(c);
+    if (gc_.show_ && gc_.getFig() != nullptr)
+      rq_.push(gc_.getFig());
+    if (gmc_.show_ && gmc_.getFig() != nullptr)
+      rq_.push(gmc_.getFig());
+    if (gr_.show_ && gr_.getFig() != nullptr)
+      rq_.push(gr_.getFig());
+    if (gpotag_.show_ && gpotag_.getFig() != nullptr)
+      rq_.push(gpotag_.getFig());
   }
   void PollEvent() {
     SDL_Event e{};

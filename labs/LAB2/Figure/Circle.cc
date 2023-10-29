@@ -1,11 +1,14 @@
-#include "Figures/Circle.hh"
+#include "Figure/Circle.hh"
 #include "VR2.hh"
+#include <iostream>
 
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
 
-Figure::Circle::Circle(VR2 O, int32_t r) : O_(O), r_(r) {}
+Figure::Circle::Circle(VR2 O, int32_t r) : O_(O), r_(r) {
+  std::cout << "Circle()\n";
+}
 
 int32_t Figure::Circle::po(VR2 a, VR2 b) {
   auto d = b - a;
@@ -16,20 +19,21 @@ void Figure::Circle::Show(SDL_Renderer *s) {
   int32_t sqrr = r_ * r_;
   SDL_RenderDrawPoint(s, O_.x, O_.y); // <-- Center
   VR2 cur = {r_, 0}, O = {0, 0};
-  while (cur.x > cur.y) {
-    VR2 sx = {cur.x - 1, cur.y}, sy = {cur.x, cur.y - 1};
+  while (cur.x >= cur.y) {
+    VR2 sx = {cur.x - 1, cur.y}, sy = {cur.x, cur.y + 1};
 
     SDL_RenderDrawPoint(s, O_.x + cur.x, O_.y + cur.y);
     SDL_RenderDrawPoint(s, O_.x - cur.x, O_.y + cur.y);
     SDL_RenderDrawPoint(s, O_.x + cur.x, O_.y - cur.y);
     SDL_RenderDrawPoint(s, O_.x - cur.x, O_.y - cur.y);
-    //                               .             .
+    //
     SDL_RenderDrawPoint(s, O_.x + cur.y, O_.y + cur.x);
     SDL_RenderDrawPoint(s, O_.x - cur.y, O_.y + cur.x);
     SDL_RenderDrawPoint(s, O_.x + cur.y, O_.y - cur.x);
     SDL_RenderDrawPoint(s, O_.x - cur.y, O_.y - cur.x);
 
-    if (std::abs(po(sx, O) - sqrr) < std::abs(po(sy, O) - sqrr))
+    if (std::abs(po(sx, O) - sqrr) <
+        std::abs(po(sy, O) - sqrr))
       cur = sx;
     else
       cur = sy;

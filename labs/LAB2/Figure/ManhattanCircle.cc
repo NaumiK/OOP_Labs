@@ -1,8 +1,11 @@
-#include "Figures/ManhattanCircle.hh"
+#include "Figure/ManhattanCircle.hh"
 #include <imgui.h>
 #include <numbers>
+#include <iostream>
 
-Figure::ManhattanCircle::ManhattanCircle(VR2 O, int32_t r) : O_(O), r_(r) {}
+Figure::ManhattanCircle::ManhattanCircle(VR2 O, int32_t r) : O_(O), r_(r) {
+  std::cout << "ManhattanCircle()\n";
+}
 
 int32_t Figure::ManhattanCircle::po(VR2 a, VR2 b) {
   auto d = b - a;
@@ -47,6 +50,7 @@ void Figure::ManhattanCircle::Show(SDL_Renderer *s) {
 
 int32_t Figure::ManhattanCircle::GetRadius() const { return r_; }
 double Figure::ManhattanCircle::GetAngle() const { return alpha_; }
+VR2 Figure::ManhattanCircle::GetPosition() const { return O_; }
 
 void Figure::ManhattanCircle::SetRadius(int32_t r) { r_ = r; }
 void Figure::ManhattanCircle::SetPosition(VR2 O) { O_ = O; }
