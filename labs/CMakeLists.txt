@@ -2,7 +2,7 @@ set(LABLIST
   LAB1
   LAB2
   LAB3
-  # LAB4
+  LAB4
   test
   )
 
