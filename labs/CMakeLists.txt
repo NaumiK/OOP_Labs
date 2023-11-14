@@ -4,6 +4,7 @@ set(LABLIST
   LAB3
   LAB4
   LAB5
+  LAB6
   test
   )
 
