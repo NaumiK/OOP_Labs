@@ -1,10 +1,10 @@
 #ifndef LAB5_FIGUREGUI_ELLIPSEGUI_HH
 #define LAB5_FIGUREGUI_ELLIPSEGUI_HH
 #include "Figure/Ellipse.hh"
-#include "FigureGui.hh"
+#include "TFigureGui.hh"
 #include <random>
 namespace FigureGui {
-class EllipseGui : public FigureGui {
+class EllipseGui : public TFigureGui {
   Figure::IEllipse *&fig_;
   std::default_random_engine gen;
   std::uniform_int_distribution<> dist{-50, 50};

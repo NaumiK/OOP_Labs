@@ -1,11 +1,11 @@
 #ifndef LAB5_FIGUREGUI_MANHATTANCIRCLE_HH
 #define LAB5_FIGUREGUI_MANHATTANCIRCLE_HH
-#include "FigureGui/FigureGui.hh"
+#include "FigureGui/TFigureGui.hh"
 #include "Figure/ManhattanCircle.hh"
 #include <random>
 
 namespace FigureGui {
-class ManhtattanCircleGui final : public FigureGui {
+class ManhtattanCircleGui final : public TFigureGui {
   Figure::ManhattanCircle *&fig_;
   std::default_random_engine gen;
   std::uniform_int_distribution<> dist{-50, 50};

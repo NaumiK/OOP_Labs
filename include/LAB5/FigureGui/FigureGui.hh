@@ -1,16 +1,10 @@
-#ifndef LAB5_FIGUREGUI_FIGUREGUI_HH
-#define LAB5_FIGUREGUI_FIGUREGUI_HH
-#include "Figure/TFigure.hh"
-namespace FigureGui {
-class FigureGui {
-public:
-  bool show_ = true, show_gui_ = false;
+#ifndef LAB5_FIGURES_FIGUREGUI_HH
+#define LAB5_FIGURES_FIGUREGUI_HH
 
-public:
-  virtual Figure::TFigure *getFig() = 0;
+#include "CircleGui.hh"
+#include "EllipseGui.hh"
+#include "ManhattanCircleGui.hh"
+#include "PictogramOfTheAncientGodsGui.hh"
+#include "RingGui.hh"
 
-  virtual void Show() = 0;
-  virtual ~FigureGui() = default;
-};
-}
 #endif

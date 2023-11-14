@@ -1,14 +1,6 @@
-#include "Figure/Ellipse.hh"
-#include "Figure/ManhattanEllipse.hh"
-#include "Figure/PictogramOfTheAncientGods.hh"
-#include "Figure/Rectangle.hh"
-#include "Figure/Ring.hh"
-#include "Figure/TFigure.hh"
-#include "FigureGui/CircleGui.hh"
-#include "FigureGui/EllipseGui.hh"
-#include "FigureGui/ManhattanCircleGui.hh"
-#include "FigureGui/PictogramOfTheAncientGodsGui.hh"
-#include "FigureGui/RingGui.hh"
+#include "Figure/Figure.hh"
+#include "FigureGen/FigureGen.hh"
+#include "FigureGui/FigureGui.hh"
 #include "MSDCore/exceptions.hh"
 
 #include <SDL2/SDL.h>
@@ -31,69 +23,17 @@
 #include <imgui_impl_sdlrenderer2.h>
 #include <random>
 
-class TFigureGen {
-protected:
-  std::default_random_engine gen;
-  std::uniform_int_distribution<> dist{-100, 100};
-
-public:
-  TFigureGen() : gen(std::random_device{}()) {}
-  virtual Figure::TFigure *generate() = 0;
-  virtual ~TFigureGen() = default;
-};
-
-class CircleGen : public TFigureGen {
-public:
-  Figure::TFigure *generate() override {
-    return new Figure::Circle({dist(gen) + 150, dist(gen) + 150},
-                              abs(dist(gen)) * 4);
-  }
-};
-
-class ManhattanCircleGen : public TFigureGen {
-public:
-  Figure::TFigure *generate() override {
-    return new Figure::ManhattanCircle({dist(gen) + 150, dist(gen) + 150},
-                                       abs(dist(gen)) * 4);
-  }
-};
-
-class EllipseGen : public TFigureGen {
-public:
-  Figure::TFigure *generate() override {
-    return new Figure::Ellipse({dist(gen) + 150, dist(gen) + 150}, dist(gen),
-                               dist(gen) * 3,
-                               std::numbers::pi / 12 * dist(gen));
-  }
-};
-
-class ManhattanEllipseGen : public TFigureGen {
-public:
-  Figure::TFigure *generate() override {
-    return new Figure::ManhattanEllipse({dist(gen) + 150, dist(gen) + 150},
-                                        abs(dist(gen)), abs(dist(gen)) * 3,
-                                        std::numbers::pi / 12 * dist(gen));
-  }
-};
-
-class RectangleGen : public TFigureGen {
-public:
-  Figure::TFigure *generate() override {
-    return new Figure::Rectangle({dist(gen) + 150, dist(gen) + 150},
-                                 abs(dist(gen)), abs(dist(gen)),
-                                 std::numbers::pi / 12 * dist(gen));
-  }
-};
-
 class ArrayMenu final {
   std::default_random_engine gen;
   std::uniform_int_distribution<> dist{-100, 100};
   std::uniform_int_distribution<> choose{0, 4};
   std::array<Figure::TFigure *, 20> &v_;
-  std::array<std::unique_ptr<TFigureGen>, 5> g_fig_ = {
-      std::make_unique<CircleGen>(), std::make_unique<ManhattanCircleGen>(),
-      std::make_unique<EllipseGen>(), std::make_unique<ManhattanEllipseGen>(),
-      std::make_unique<RectangleGen>()};
+  std::array<std::unique_ptr<FigureGen::TFigureGen>, 5> g_fig_ = {
+      std::make_unique<FigureGen::CircleGen>(),
+      std::make_unique<FigureGen::ManhattanCircleGen>(),
+      std::make_unique<FigureGen::EllipseGen>(),
+      std::make_unique<FigureGen::ManhattanEllipseGen>(),
+      std::make_unique<FigureGen::RectangleGen>()};
 
 public:
   bool g_menu = false, show = true;

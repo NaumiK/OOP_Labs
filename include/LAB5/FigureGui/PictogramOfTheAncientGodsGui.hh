@@ -1,12 +1,12 @@
 #ifndef LAB5_FIGUREGUI_PICTOGRAMOFTHEANCIENTGODSGUI_HH
 #define LAB5_FIGUREGUI_PICTOGRAMOFTHEANCIENTGODSGUI_HH
 
-#include "FigureGui/FigureGui.hh"
+#include "FigureGui/TFigureGui.hh"
 #include "Figure/PictogramOfTheAncientGods.hh"
 #include <random>
 
 namespace FigureGui {
-class PictogramOfTheAncientGodsGui final : public FigureGui {
+class PictogramOfTheAncientGodsGui final : public TFigureGui {
   Figure::PictogramOfTheAncientGods *&fig_;
   std::default_random_engine gen;
   std::uniform_int_distribution<> dist{-50, 50};

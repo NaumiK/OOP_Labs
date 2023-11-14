@@ -15,6 +15,13 @@ set(SRCS
   FigureGui/RingGui.cc
   FigureGui/PictogramOfTheAncientGodsGui.cc
   FigureGui/EllipseGui.cc
+
+
+  FigureGen/CircleGen.cc
+  FigureGen/EllipseGen.cc
+  FigureGen/ManhattanCircleGen.cc
+  FigureGen/ManhattanEllipseGen.cc
+  FigureGen/RectangleGen.cc
   )
 
 find_package(SDL2 CONFIG REQUIRED COMPONENTS SDL2 SDL2main)
