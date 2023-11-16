@@ -2,6 +2,7 @@
 #include "FigureGen/FigureGen.hh"
 #include "FigureGui/FigureGui.hh"
 #include "MSDCore/exceptions.hh"
+#include <algorithm>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -14,6 +15,7 @@
 
 #include <array>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <numbers>
 #include <queue>
@@ -22,6 +24,242 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
 #include <random>
+#include <stdexcept>
+
+template <typename T> struct MyVectorBuf {
+protected:
+  T *arr_;
+  size_t capacity_, size_ = 0;
+
+protected:
+  MyVectorBuf(const MyVectorBuf &) = delete;
+  MyVectorBuf &operator=(const MyVectorBuf &) = delete;
+  MyVectorBuf(MyVectorBuf &&rhs) noexcept
+      : arr_(rhs.arr_), size_(rhs.size_), capacity_(rhs.capacity_) {
+    rhs.arr_ = nullptr;
+    rhs.size_ = 0;
+    rhs.capacity_ = 0;
+  }
+  MyVectorBuf &operator=(MyVectorBuf &&rhs) noexcept {
+    std::swap(arr_, rhs.arr_);
+    std::swap(size_, rhs.size_);
+    std::swap(capacity_, rhs.capacity_);
+    return *this;
+  }
+  MyVectorBuf(size_t capacity = 0)
+      : arr_((capacity == 0)
+                 ? nullptr
+                 : static_cast<T *>(::operator new(sizeof(T) * capacity))),
+        capacity_(capacity) {}
+
+  ~MyVectorBuf() {
+    for (auto i = arr_, ei = arr_ + capacity_; i != ei; ++i)
+      i->~T();
+    ::operator delete(arr_);
+  }
+};
+
+template <typename T> class MyVectorIterator;
+
+template <typename T>
+bool operator==(const MyVectorIterator<T> &lhs,
+                const MyVectorIterator<T> &rhs) {
+  return lhs.t_ == rhs.t_;
+}
+
+template <typename T>
+bool operator!=(const MyVectorIterator<T> &lhs,
+                const MyVectorIterator<T> &rhs) {
+  return !(lhs == rhs);
+}
+
+template <typename T>
+bool operator<(const MyVectorIterator<T> &lhs, const MyVectorIterator<T> &rhs) {
+  return lhs.t_ < rhs.t_;
+}
+
+template <typename T>
+bool operator>(const MyVectorIterator<T> &lhs, const MyVectorIterator<T> &rhs) {
+  return rhs < lhs;
+}
+
+template <typename T>
+bool operator<=(const MyVectorIterator<T> &lhs,
+                const MyVectorIterator<T> &rhs) {
+  return !(lhs > rhs);
+}
+
+template <typename T>
+bool operator>=(const MyVectorIterator<T> &lhs,
+                const MyVectorIterator<T> &rhs) {
+  return !(lhs < rhs);
+}
+
+template <typename T>
+MyVectorIterator<T> operator+(MyVectorIterator<T> it,
+                              typename MyVectorIterator<T>::difference_type n) {
+  it += n;
+  return it;
+}
+
+template <typename T>
+MyVectorIterator<T> operator+(typename MyVectorIterator<T>::difference_type n,
+                              MyVectorIterator<T> it) {
+  it += n;
+  return it;
+}
+
+template <typename T>
+MyVectorIterator<T> operator-(MyVectorIterator<T> it,
+                              typename MyVectorIterator<T>::difference_type n) {
+  it -= n;
+  return it;
+}
+
+template <typename T>
+int64_t operator-(const MyVectorIterator<T> &lhs,
+                  const MyVectorIterator<T> &rhs) {
+  return lhs.t_ - rhs.t_;
+}
+
+template <typename T> class MyVectorIterator {
+public:
+  using difference_type = std::ptrdiff_t;
+  using value_type = std::remove_cv_t<T>;
+  using pointer = T *;
+  using reference = T &;
+  using iterator = MyVectorIterator;
+  using iterator_category = std::random_access_iterator_tag;
+  using iterator_concept = std::contiguous_iterator_tag;
+
+protected:
+  T *t_;
+
+public:
+  MyVectorIterator() = default;
+  MyVectorIterator(T *t) : t_(t) {}
+  MyVectorIterator(const MyVectorIterator &) = default;
+  MyVectorIterator &operator=(const MyVectorIterator &) = default;
+  ~MyVectorIterator() = default;
+  reference operator*() { return *t_; }
+  reference operator*() const { return *t_; }
+  iterator &operator++() {
+    ++t_;
+    return *this;
+  }
+  iterator operator++(int) {
+    auto old = *this;
+    ++(*this);
+    return old;
+  }
+
+  pointer operator->() { return t_; }
+  const pointer operator->() const { return t_; }
+
+  iterator &operator--() {
+    --t_;
+    return *this;
+  }
+
+  iterator operator--(int) {
+    auto old = *this;
+    --(*this);
+    return old;
+  }
+
+  reference operator[](difference_type n) const {
+    auto tmp = *this;
+    tmp += n;
+    return *tmp;
+  }
+
+  iterator &operator+=(difference_type n) {
+    t_ += n;
+    return *this;
+  }
+
+  iterator &operator-=(difference_type n) {
+    t_ -= n;
+    return *this;
+  }
+
+  template <typename T1>
+  friend bool operator==(const MyVectorIterator<T1> &lhs,
+                         const MyVectorIterator<T1> &rhs);
+
+  template <typename T1>
+  friend int64_t operator-(const MyVectorIterator<T1> &lhs,
+                           const MyVectorIterator<T1> &rhs);
+
+  template <typename T1>
+  friend bool operator<(const MyVectorIterator<T1> &lhs,
+                        const MyVectorIterator<T1> &rhs);
+};
+
+template <typename T>
+void swap(MyVectorIterator<T> &a, MyVectorIterator<T> &b) {
+  std::swap(a.t_, b.t_);
+}
+
+template <typename T> struct MyVector final : private MyVectorBuf<T> {
+  using MyVectorBuf<T>::arr_;
+  using MyVectorBuf<T>::capacity_;
+  using MyVectorBuf<T>::size_;
+  using iterator = MyVectorIterator<T>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+
+  explicit MyVector(size_t sz = 0) : MyVectorBuf<T>(sz) {}
+
+  MyVector(const MyVector &rhs) : MyVectorBuf<T>(rhs.size_) {
+    for (; size_ < rhs.size_; ++size_) {
+      new (arr_ + size_) T(std::move(rhs.arr_[size_]));
+    }
+  }
+  MyVector &operator=(const MyVector &rhs) {
+    MyVector tmp(rhs);
+    //--------------
+    std::swap(*this, tmp);
+  }
+  MyVector(MyVector &&rhs) = default;
+  MyVector &operator=(MyVector &&rhs) = default;
+  void pop_back() {
+    if (size_ == 0)
+      throw std::runtime_error("Empty vector");
+    (arr_ + --size_)->~T();
+  }
+  T back() const {
+    if (size_ == 0)
+      throw std::runtime_error("Empty vector");
+    return arr_[size_ - 1];
+  }
+  T front() const {
+    if (size_ == 0)
+      throw std::runtime_error("Empty vector");
+    return arr_[0];
+  }
+  void push_back(T &&t) {
+    if (size_ == capacity_) {
+      MyVector<T> tmp(capacity_ * 2 + 1);
+      for (; tmp.size_ < size_;)
+        tmp.push_back(std::move(arr_[tmp.size_]));
+      tmp.push_back(std::move(t));
+      //-------------------
+      std::swap(*this, tmp);
+    } else {
+      new (arr_ + size_++) T(std::move(t));
+    }
+  }
+  iterator begin() { return iterator(arr_); }
+  iterator end() { return iterator(arr_ + size_); }
+  reverse_iterator rbegin() { return reverse_iterator(end()); }
+  reverse_iterator rend() { return reverse_iterator(begin()); }
+  void push_back(const T &t) {
+    T t2(t);
+    push_back(std::move(t2));
+  }
+  size_t size() const { return size_; }
+  size_t capacity() const { return capacity_; }
+};
 
 class ArrayMenu final {
   std::default_random_engine gen;
@@ -263,26 +501,6 @@ private:
             }
           }
         }
-#if 0
-        for (auto &i : v_) {
-          if (i != nullptr) {
-            switch (e.key.keysym.sym) {
-            case SDLK_UP:
-              i->MoveTo({0, -1});
-              break;
-            case SDLK_DOWN:
-              i->MoveTo({0, 1});
-              break;
-            case SDLK_RIGHT:
-              i->MoveTo({1, 0});
-              break;
-            case SDLK_LEFT:
-              i->MoveTo({-1, 0});
-              break;
-            }
-          }
-        }
-#endif
         break;
       }
     }
@@ -290,13 +508,27 @@ private:
 };
 
 int main(int argc, char **argv) try {
+#if 0
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     throw sdl_error("SDL_Init");
   {
     App app;
     app.run();
   }
+
   SDL_Quit();
+#endif
+  MyVector<int> v;
+  v.push_back(1);
+  v.push_back(2);
+  v.push_back(8);
+  v.push_back(4);
+  v.push_back(3);
+  std::sort(v.rbegin(), v.rend());
+  for (auto &i : v)
+    std::cout << i << " ";
+  // for (auto i = v.begin(), ei = v.end(); i != ei; ++i)
+  //   std::cout << *i << " ";
   return 0;
 } catch (sdl_error &e) {
   std::cerr << "SDL error: " << e.what() << std::endl;
