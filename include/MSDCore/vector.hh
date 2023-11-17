@@ -75,10 +75,10 @@ template <typename T> struct vector final : private vector_buf<T> {
   }
   static vector create_filled_vector(size_t sz = 0, const T &value = T()) {
     vector<T> res(sz);
-    for (; res.size_ < sz;)
-      res.push_back(value);
-    // for (; res.size_ < sz; ++res.size_)
-    //   new (res.arr_ + res.size_) T(std::move(value));
+    // for (; res.size_ < sz;)
+    //   res.push_back(value);
+    for (; res.size_ < sz; ++res.size_)
+      new (res.arr_ + res.size_) T(std::move(value));
     return res;
   }
   reference operator[](difference_type n) const noexcept { return *(arr_ + n); }

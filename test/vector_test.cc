@@ -130,7 +130,6 @@ TEST(VectorTests, SizeCapacityTest) {
   bool expected = true, actual = (v.size() == 0 && v.capacity() == 20);
   EXPECT_EQ(actual, expected);
 }
-#if 0
 TEST(VectorTests, FilledTest) {
   auto v = msd::vector<int>::create_filled_vector(8, 8);
   bool expected = true, actual = (v.size() == 8 && v.capacity() == 8);
@@ -138,7 +137,6 @@ TEST(VectorTests, FilledTest) {
     actual = actual && i == 8;
   EXPECT_EQ(actual, expected);
 }
-#endif
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

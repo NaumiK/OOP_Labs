@@ -124,14 +124,12 @@ class App final {
   Figure::Rectangle *rect_ =
       new Figure::Rectangle({300, 300}, 100, 30, std::numbers::pi / 3);
 
-  msd::vector<Figure::TFigure *> v_{20};
-  // msd::vector<Figure::TFigure *>::create_filled_vector(20, nullptr);
+  msd::vector<Figure::TFigure *> v_ =
+      msd::vector<Figure::TFigure *>::create_filled_vector(20, nullptr);
   ArrayMenu am_;
 
 public:
   App() : gc_(c_), gmc_(mc_), gr_(r_), gpotag_(potag_), ge_(e_), am_(v_) {
-    for (size_t i = 0, ei = 20; i < ei; ++i)
-      v_.push_back(nullptr);
     std::cout << "App()\n";
     if (win_ == NULL)
       throw sdl_error("SDL_CreateWindow error");
