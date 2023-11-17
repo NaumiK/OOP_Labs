@@ -50,19 +50,15 @@ template <typename T> struct vector final : private vector_buf<T> {
   using difference_type = iterator::difference_type;
   using reference = iterator::reference;
 
-  explicit vector(size_t sz = 0, const T& value = T()) : vector_buf<T>(sz) {
-    for (;size_ < sz; ++size_) 
-      new (arr_ + size_) T(std::move(value));
-  }
+  explicit vector(size_t sz = 0) : vector_buf<T>(sz) {}
 
-  vector (const std::initializer_list<T> &il) : vector_buf<T>(il.size()) {
+  vector(const std::initializer_list<T> &il) : vector_buf<T>(il.size()) {
     for (auto i = il.begin(), ei = il.end(); i != ei; ++size_, ++i)
       new (arr_ + size_) T(std::move(*i));
   }
-
   vector(const vector &rhs) : vector_buf<T>(rhs.size_) {
     for (; size_ < rhs.size_; ++size_) {
-      new (arr_ + size_) T(std::move(rhs.arr_[size_]));
+      new (arr_ + size_) T(rhs.arr_[size_]);
     }
   }
   vector &operator=(const vector &rhs) {
@@ -73,13 +69,19 @@ template <typename T> struct vector final : private vector_buf<T> {
   vector(vector &&rhs) = default;
   vector &operator=(vector &&rhs) = default;
   void pop_back() {
-    if (size_ == 0)
+    if (size_ < 1)
       throw std::runtime_error("Empty vector");
     (arr_ + --size_)->~T();
   }
-  reference operator[](difference_type n) const noexcept {
-    return *(arr_ + n);
+  static vector create_filled_vector(size_t sz = 0, const T &value = T()) {
+    vector<T> res(sz);
+    for (; res.size_ < sz;)
+      res.push_back(value);
+    // for (; res.size_ < sz; ++res.size_)
+    //   new (res.arr_ + res.size_) T(std::move(value));
+    return res;
   }
+  reference operator[](difference_type n) const noexcept { return *(arr_ + n); }
   T back() const {
     if (size_ == 0)
       throw std::runtime_error("Empty vector");
@@ -99,7 +101,8 @@ template <typename T> struct vector final : private vector_buf<T> {
       //-------------------
       std::swap(*this, tmp);
     } else {
-      new (arr_ + size_++) T(std::move(t));
+      new (arr_ + size_) T(std::move(t));
+      size_+= 1;
     }
   }
   iterator begin() { return iterator(arr_); }

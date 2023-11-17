@@ -19,3 +19,8 @@ foreach(LAB ${LABLIST})
   target_link_libraries(${LAB} PRIVATE ${LIBLIST})
 endforeach(LAB ${LABLIST})
 
+option(BUILD_TESTS "Enable/disable tests" ON)
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()

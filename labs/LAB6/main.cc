@@ -1,4 +1,5 @@
 #include "Figure/Figure.hh"
+#include "Figure/TFigure.hh"
 #include "FigureGen/FigureGen.hh"
 #include "FigureGui/FigureGui.hh"
 #include "MSDCore/exceptions.hh"
@@ -43,7 +44,7 @@ public:
 
 public:
   ~ArrayMenu() {
-    for (auto &i: g_fig_)
+    for (auto &i : g_fig_)
       delete i;
   }
   ArrayMenu(msd::vector<Figure::TFigure *> &v)
@@ -123,11 +124,14 @@ class App final {
   Figure::Rectangle *rect_ =
       new Figure::Rectangle({300, 300}, 100, 30, std::numbers::pi / 3);
 
-  msd::vector<Figure::TFigure *> v_{20, nullptr};
+  msd::vector<Figure::TFigure *> v_{20};
+  // msd::vector<Figure::TFigure *>::create_filled_vector(20, nullptr);
   ArrayMenu am_;
 
 public:
   App() : gc_(c_), gmc_(mc_), gr_(r_), gpotag_(potag_), ge_(e_), am_(v_) {
+    for (size_t i = 0, ei = 20; i < ei; ++i)
+      v_.push_back(nullptr);
     std::cout << "App()\n";
     if (win_ == NULL)
       throw sdl_error("SDL_CreateWindow error");
@@ -250,8 +254,9 @@ private:
         run_ = false;
         break;
       case SDL_KEYDOWN:
-        Figure::TFigure *f[] = {gc_.getFig(),     gmc_.getFig(), gr_.getFig(),
-                                gpotag_.getFig(), ge_.getFig(),  rect_};
+        msd::vector<Figure::TFigure *> f = {gc_.getFig(), gmc_.getFig(),
+                                            gr_.getFig(), gpotag_.getFig(),
+                                            ge_.getFig(), rect_};
         for (auto &i : f) {
           if (i != nullptr) {
             switch (e.key.keysym.sym) {
@@ -285,13 +290,6 @@ int main(int argc, char **argv) try {
   }
 
   SDL_Quit();
-  // msd::vector<int> v = {1, 2, 6, 4, 5};
-  // std::sort(v.rbegin(), v.rend());
-  // for (auto &i : v)
-  //   std::cout << i << " ";
-  // std::cout << "\n";
-  // for (size_t i = 0, ei = v.size(); i < ei; ++i)
-  //   std::cout << v[i] << " ";
   return 0;
 } catch (sdl_error &e) {
   std::cerr << "SDL error: " << e.what() << std::endl;

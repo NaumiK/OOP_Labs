@@ -5,7 +5,8 @@ set(LABLIST
   LAB4
   LAB5
   LAB6
-  test
+  testA
+  vector_memory_test
   )
 
 foreach(LAB ${LABLIST})
