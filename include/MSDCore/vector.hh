@@ -65,6 +65,7 @@ template <typename T> struct vector final : private vector_buf<T> {
     vector tmp(rhs);
     //--------------
     std::swap(*this, tmp);
+    return *this;
   }
   vector(vector &&rhs) = default;
   vector &operator=(vector &&rhs) = default;
