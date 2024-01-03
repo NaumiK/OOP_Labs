@@ -42,10 +42,8 @@ void test1() {
   std::cout << vv2.size() << std::endl;
 }
 
-int main() 
-  try {
-    test1();
-  } catch (std::bad_alloc &) {
-    std::cout << "Exception catched\n";
-  }
-
+int main() try {
+  test1();
+} catch (std::bad_alloc &) {
+  std::cout << "Exception catched\n";
+}
