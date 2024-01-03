@@ -89,7 +89,7 @@ template <typename T> struct vector final : private vector_buf<T> {
                 typename std::iterator_traits<Iter>::iterator_category>>>
   vector(Iter fst, Iter lst) : vector(std::distance(fst, lst)) {
     for (; fst != lst; ++fst, ++size_)
-      new (arr_ + size_) T(std::move(*fst));
+      new (arr_ + size_) T(*fst);
   }
   reference operator[](difference_type n) const noexcept { return *(arr_ + n); }
   T back() const {
