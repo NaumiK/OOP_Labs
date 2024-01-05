@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <iostream>
+
 TEST(ListTests, BegEndTest) {
   std::list l = {1, 2, 3};
   msd::list<int> ml;

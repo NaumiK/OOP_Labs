@@ -48,7 +48,7 @@ template <typename T> struct vector final : private vector_buf<T> {
   using vector_buf<T>::capacity_;
   using vector_buf<T>::size_;
   using iterator = vector_iterator___<T>;
-  using const_iterator = vector_iterator___<const T>;
+  using const_iterator = const_vector_iterator___<T>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   using difference_type = iterator::difference_type;
