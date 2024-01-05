@@ -161,7 +161,15 @@ TEST(VectorTests, IteratorConstructTest3) {
   actual = actual && std::equal(v.rbegin(), v.rend(), w.cbegin(), w.cend());
   EXPECT_EQ(actual, true);
 }
-
+TEST(VectorTests, IteratorConstructTest4) {
+  int v[4] = {1, 2, 3, 4};
+  auto w = msd::vector(v, v + 4);
+  auto x = msd::vector{1, 2, 3, 4};
+  bool actual = std::is_same_v<decltype(w), typename msd::vector<int>>;
+  actual = actual && std::equal(v, v + 4, w.begin(), w.end());
+  actual = actual && std::equal(x.begin(), x.end(), w.begin(), w.end());
+  EXPECT_EQ(actual, true);
+}
 TEST(VectorTests, EmplaceTest) {
   struct CopyTest {
     bool copied = false;
@@ -180,6 +188,16 @@ TEST(VectorTests, EmplaceTest) {
   EXPECT_EQ(v[0].a_, 1);
   EXPECT_EQ(v[0].b_, 2.0);
   EXPECT_EQ(v[0].c_, 3);
+}
+TEST(VectorTests, SwapTest) {
+  msd::vector v1 = {1, 2, 3};
+  msd::vector v2 = {2, 3, 4};
+  msd::vector w1 = {1, 2, 3};
+  msd::vector w2 = {2, 3, 4};
+  std::swap(w1, w2);
+  v1.swap(v2);
+  EXPECT_EQ(v1 == w1, true);
+  EXPECT_EQ(v2 == w2, true);
 }
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
