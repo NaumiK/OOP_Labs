@@ -54,3 +54,32 @@ TEST(ListTests, IteratorConstructTest4) {
   actual = actual && std::equal(x.begin(), x.end(), w.begin(), w.end());
   EXPECT_EQ(actual, true);
 }
+TEST(VectorTests, EmplaceTest) {
+  struct CopyTest {
+    bool copied = false;
+    bool moved = false;
+    CopyTest(const CopyTest &ct) { copied = true; }
+    CopyTest(CopyTest &&ct) { moved = true; }
+    int a_;
+    double b_;
+    int64_t c_;
+    CopyTest(int a, double b, int64_t c) : a_(a), b_(b), c_(c) {}
+  };
+  msd::list<CopyTest> v;
+  v.emplace_back(1, 2.0, 3);
+  bool actual = !(v.front().moved || v.front().copied);
+  EXPECT_EQ(actual, true);
+  EXPECT_EQ(v.front().a_, 1);
+  EXPECT_EQ(v.front().b_, 2.0);
+  EXPECT_EQ(v.front().c_, 3);
+}
+TEST(VectorTests, SwapTest) {
+  msd::list v1 = {1, 2, 3};
+  msd::list v2 = {2, 3, 4};
+  msd::list w1 = {1, 2, 3};
+  msd::list w2 = {2, 3, 4};
+  std::swap(w1, w2);
+  v1.swap(v2);
+  EXPECT_EQ(v1 == w1, true);
+  EXPECT_EQ(v2 == w2, true);
+}

@@ -30,6 +30,7 @@ template <typename T> class list {
       std::swap(data_, rhs.data_);
       std::swap(next_, rhs.next_);
       std::swap(prev_, rhs.prev_);
+      return *this;
     }
     Node(const Node &) = delete;
     Node &operator=(const Node &) = delete;
@@ -103,6 +104,21 @@ public:
   void push_front(const T &t) {
     T tmp(t);
     push_front(std::move(tmp));
+  }
+public:
+  template<typename ...Args>
+  void emplace_back(Args &&... args) {
+    Node *tmp = new Node(new T(std::forward<Args>(args)...), lst_->prev_, lst_);
+    /////////////////////
+    lst_->prev_ = (lst_->prev_ ? lst_->prev_->next_ : fst_) = tmp;
+    ++size_;
+  }
+  template<typename ...Args>
+  void emplace_front(Args &&... args) {
+    Node *tmp = new Node(new T(std::forward<Args>(args)...), nullptr, fst_);
+    /////////////////////
+    fst_ = fst_->prev_ = tmp;
+    ++size_;
   }
 
 public:
@@ -267,8 +283,8 @@ public:
   size_t max_size() const { return std::numeric_limits<size_t>::max(); }
   void swap(list &rhs) noexcept {
     std::swap(size_, rhs.size_);
-    std::swap(*fst_, *rhs.fst_);
-    std::swap(*lst_, *rhs.lst_);
+    std::swap(fst_, rhs.fst_);
+    std::swap(lst_, rhs.lst_);
   }
 };
 template <typename Iter>
