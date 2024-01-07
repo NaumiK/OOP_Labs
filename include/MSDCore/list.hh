@@ -21,7 +21,11 @@ template <typename T> class list {
         : data_(new T(data)), prev_(prev), next_(next) {}
     Node(T &&data, Node *prev = nullptr, Node *next = nullptr)
         : data_(new T(std::move(data))), prev_(prev), next_(next) {}
-    Node(Node &&rhs) : data_(rhs.data_), prev_(rhs.prev_), next_(rhs.next_) {}
+    Node(Node &&rhs) : data_(rhs.data_), prev_(rhs.prev_), next_(rhs.next_) {
+      rhs.data_ = nullptr;
+      rhs.prev_ = nullptr;
+      rhs.next_ = nullptr;
+    }
     Node &operator=(Node &&rhs) {
       std::swap(data_, rhs.data_);
       std::swap(next_, rhs.next_);
@@ -51,22 +55,27 @@ public:
             typename = std::enable_if_t<std::is_base_of_v<
                 std::input_iterator_tag,
                 typename std::iterator_traits<Iter>::iterator_category>>>
-  list(Iter fst, Iter lst) {
+  list(Iter fst, Iter lst) : list() {
     list tmp;
     for (; fst != lst; ++fst)
       tmp.push_back(*fst);
     std::swap(*this, tmp);
   }
-  list(const std::initializer_list<T> &il) {
+  list(const std::initializer_list<T> &il) : list() {
     list tmp;
     for (auto &&i : il)
       tmp.push_back(i);
-    std::swap(*this, il);
+    std::swap(*this, tmp);
   }
-  ////// ????
-  list(list &&rhs) = default;
-  list &operator=(list &&rhs) = default;
-  ////// ????
+  list(list &&rhs) : size_(rhs.size_), fst_(rhs.fst_), lst_(rhs.lst_) {
+    rhs.fst_ = rhs.lst_ = new Node;
+  }
+  list &operator=(list &&rhs) {
+    std::swap(fst_, rhs.fst_);
+    std::swap(lst_, rhs.lst_);
+    std::swap(size_, rhs.size_);
+    return *this;
+  }
   ~list() {
     while (!empty()) {
       pop_front();
@@ -78,7 +87,7 @@ public:
   void push_back(T &&t) {
     Node *tmp = new Node(t, lst_->prev_, lst_);
     /////////////////////
-    (lst_->prev_ ? lst_->prev_->next_ : fst_) = tmp;
+    lst_->prev_ = (lst_->prev_ ? lst_->prev_->next_ : fst_) = tmp;
     ++size_;
   }
   void push_back(const T &t) {
@@ -88,7 +97,7 @@ public:
   void push_front(T &&t) {
     Node *tmp = new Node(t, nullptr, fst_);
     /////////////////////
-    fst_ = tmp;
+    fst_ = fst_->prev_ = tmp;
     ++size_;
   }
   void push_front(const T &t) {
@@ -256,10 +265,12 @@ public:
   bool empty() { return begin() == end(); }
   size_t size() const { return size_; }
   size_t max_size() const { return std::numeric_limits<size_t>::max(); }
+  void swap(list &rhs) noexcept {
+    std::swap(size_, rhs.size_);
+    std::swap(*fst_, *rhs.fst_);
+    std::swap(*lst_, *rhs.lst_);
+  }
 };
-/////////// нужно подумать, как сделать const_iterator
-/////////// ещё тесты написать
-/////////// баги если что половить
 template <typename Iter>
 list(Iter fst, Iter lst)
     -> list<typename std::iterator_traits<Iter>::value_type>;
