@@ -54,7 +54,7 @@ TEST(ListTests, IteratorConstructTest4) {
   actual = actual && std::equal(x.begin(), x.end(), w.begin(), w.end());
   EXPECT_EQ(actual, true);
 }
-TEST(VectorTests, EmplaceTest) {
+TEST(ListTests, EmplaceTest) {
   struct CopyTest {
     bool copied = false;
     bool moved = false;
@@ -73,7 +73,7 @@ TEST(VectorTests, EmplaceTest) {
   EXPECT_EQ(v.front().b_, 2.0);
   EXPECT_EQ(v.front().c_, 3);
 }
-TEST(VectorTests, SwapTest) {
+TEST(ListTests, SwapTest) {
   msd::list v1 = {1, 2, 3};
   msd::list v2 = {2, 3, 4};
   msd::list w1 = {1, 2, 3};
