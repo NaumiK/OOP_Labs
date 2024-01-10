@@ -182,7 +182,7 @@ private:
       //   Figure::TFigure *f[] = {gc_.getFig(),     gmc_.getFig(),
       //   gr_.getFig(),
       //                           gpotag_.getFig(), ge_.getFig(),  rect_};
-      //   for (auto &i: f) {
+      //   for (auto &&i: f) {
       //     if (i != nullptr) {
       //       // if (e.key == SDLK_UP)
       //       SDLK_UP
@@ -196,7 +196,7 @@ private:
       case SDL_KEYDOWN:
         Figure::TFigure *f[] = {gc_.getFig(),     gmc_.getFig(), gr_.getFig(),
                                 gpotag_.getFig(), ge_.getFig(),  rect_};
-        for (auto &i : f) {
+        for (auto &&i : f) {
           if (i != nullptr) {
             switch (e.key.keysym.sym) {
               case SDLK_UP:

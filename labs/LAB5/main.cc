@@ -43,7 +43,7 @@ public:
       : v_(v), gen(std::random_device{}()) {}
 
   void create_figures() {
-    for (auto &i : v_) {
+    for (auto &&i : v_) {
       delete i;
       auto tmp = choose(gen);
       i = g_fig_[tmp]->generate();
@@ -51,14 +51,14 @@ public:
   }
 
   void destroy_figures() {
-    for (auto &i : v_) {
+    for (auto &&i : v_) {
       delete i;
       i = nullptr;
     }
   }
 
   void move_figures() {
-    for (auto &i : v_)
+    for (auto &&i : v_)
       if (i != nullptr)
         i->MoveTo({dist(gen), dist(gen)});
   }
@@ -228,7 +228,7 @@ private:
     if (ge_.show_ && ge_.getFig() != nullptr)
       rq_.push(ge_.getFig());
     if (am_.show)
-      for (auto &i : v_)
+      for (auto &&i : v_)
         if (i != nullptr)
           rq_.push(i);
     rq_.push(rect_);
@@ -245,7 +245,7 @@ private:
       case SDL_KEYDOWN:
         Figure::TFigure *f[] = {gc_.getFig(),     gmc_.getFig(), gr_.getFig(),
                                 gpotag_.getFig(), ge_.getFig(),  rect_};
-        for (auto &i : f) {
+        for (auto &&i : f) {
           if (i != nullptr) {
             switch (e.key.keysym.sym) {
             case SDLK_UP:
@@ -264,7 +264,7 @@ private:
           }
         }
 #if 0
-        for (auto &i : v_) {
+        for (auto &&i : v_) {
           if (i != nullptr) {
             switch (e.key.keysym.sym) {
             case SDLK_UP:

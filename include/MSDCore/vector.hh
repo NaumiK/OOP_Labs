@@ -2,7 +2,9 @@
 #define MSDCORE_VECTOR_HH
 #include <initializer_list>
 #include <iterator>
+#include <limits>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "vector_iterator.hh"
@@ -46,7 +48,9 @@ template <typename T> struct vector final : private vector_buf<T> {
   using vector_buf<T>::capacity_;
   using vector_buf<T>::size_;
   using iterator = vector_iterator___<T>;
+  using const_iterator = const_vector_iterator___<T>;
   using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   using difference_type = iterator::difference_type;
   using reference = iterator::reference;
 
@@ -76,11 +80,17 @@ template <typename T> struct vector final : private vector_buf<T> {
   }
   static vector create_filled_vector(size_t sz = 0, const T &value = T()) {
     vector<T> res(sz);
-    // for (; res.size_ < sz;)
-    //   res.push_back(value);
-    for (; res.size_ < sz; ++res.size_)
-      new (res.arr_ + res.size_) T(std::move(value));
+    for (; res.size_ < sz;)
+      res.push_back(value);
     return res;
+  }
+  template <typename Iter,
+            typename = std::enable_if_t<std::is_base_of_v<
+                std::input_iterator_tag,
+                typename std::iterator_traits<Iter>::iterator_category>>>
+  vector(Iter fst, Iter lst) : vector(std::distance(fst, lst)) {
+    for (; fst != lst; ++fst, ++size_)
+      new (arr_ + size_) T(*fst);
   }
   reference operator[](difference_type n) const noexcept { return *(arr_ + n); }
   T back() const {
@@ -103,20 +113,71 @@ template <typename T> struct vector final : private vector_buf<T> {
       std::swap(*this, tmp);
     } else {
       new (arr_ + size_) T(std::move(t));
-      size_+= 1;
+      size_ += 1;
+    }
+  }
+  template <typename... Args> void emplace_back(Args &&...args) {
+    if (size_ == capacity_) {
+      vector<T> tmp(capacity_ * 2 + 1);
+      for (; tmp.size_ < size_;)
+        tmp.push_back(std::move(arr_[tmp.size_]));
+      tmp.emplace_back(std::forward<Args>(args)...);
+      std::swap(*this, tmp);
+    } else {
+      new (arr_ + size_) T(std::forward<Args>(args)...);
+      size_ += 1;
     }
   }
   iterator begin() { return iterator(arr_); }
   iterator end() { return iterator(arr_ + size_); }
+  const_iterator begin() const { return const_iterator(arr_); }
+  const_iterator end() const { return const_iterator(arr_ + size_); }
+
+  const_iterator cbegin() const { return const_iterator(arr_); }
+  const_iterator cend() const { return const_iterator(arr_ + size_); }
+
   reverse_iterator rbegin() { return reverse_iterator(end()); }
   reverse_iterator rend() { return reverse_iterator(begin()); }
+  const_reverse_iterator rbegin() const {
+    return const_reverse_iterator(end());
+  }
+  const_reverse_iterator rend() const {
+    return const_reverse_iterator(begin());
+  }
+
+  const_reverse_iterator crbegin() const {
+    return const_reverse_iterator(end());
+  }
+  const_reverse_iterator crend() const {
+    return const_reverse_iterator(begin());
+  }
+
   void push_back(const T &t) {
     T t2(t);
     push_back(std::move(t2));
   }
   size_t size() const { return size_; }
   size_t capacity() const { return capacity_; }
+  bool empty() const { return begin() == end(); }
+  void swap(vector &rhs) noexcept { std::swap(*this, rhs); }
+  size_t max_size() const noexcept {
+    return std::numeric_limits<difference_type>::max();
+  }
 };
+
+template <typename Iter>
+vector(Iter fst, Iter lst)
+    -> vector<typename std::iterator_traits<Iter>::value_type>;
 } // namespace msd
+
+template <typename T>
+bool operator==(const msd::vector<T> &a, const msd::vector<T> &b) {
+  return std::equal(a.begin(), a.end(), b.begin(), b.end());
+}
+
+template <typename T>
+bool operator!=(const msd::vector<T> &a, const msd::vector<T> &b) {
+  return !(a == b);
+}
 
 #endif

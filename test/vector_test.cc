@@ -85,7 +85,7 @@ TEST(VectorTests, InitListIteratorTest) {
   msd::vector<int> v = {0, 1, 2, 3};
   int cur = 0;
   bool actual = true, expected = true;
-  for (auto &i : v) {
+  for (auto &&i : v) {
     actual = actual && (i == cur);
     ++cur;
   }
@@ -97,7 +97,7 @@ TEST(VectorTests, SortAndIteratorTest) {
   int cur = 0;
   bool actual = true, expected = true;
   std::sort(v.begin(), v.end());
-  for (auto &i : v) {
+  for (auto &&i : v) {
     actual = actual && (i == cur);
     ++cur;
   }
@@ -133,11 +133,72 @@ TEST(VectorTests, SizeCapacityTest) {
 TEST(VectorTests, FilledTest) {
   auto v = msd::vector<int>::create_filled_vector(8, 8);
   bool expected = true, actual = (v.size() == 8 && v.capacity() == 8);
-  for (auto &i : v)
+  for (auto &&i : v)
     actual = actual && i == 8;
   EXPECT_EQ(actual, expected);
 }
-
+TEST(VectorTests, IteratorConstructTest) {
+  auto v = std::vector<int>{1, 2, 3, 4};
+  auto w = msd::vector(v.begin(), v.end());
+  bool actual = std::is_same_v<decltype(w), typename msd::vector<int>> &&
+                w.size() == v.size();
+  actual = actual && std::equal(v.begin(), v.end(), w.begin(), w.end());
+  EXPECT_EQ(actual, true);
+}
+TEST(VectorTests, IteratorConstructTest2) {
+  auto v = msd::vector<int>{1, 2, 3, 4};
+  auto w = msd::vector(v.begin(), v.end());
+  auto &&t = const_cast<const decltype(w) &>(w).begin();
+  bool actual = v == w && *(++t) == 2;
+  EXPECT_EQ(actual, true);
+}
+TEST(VectorTests, IteratorConstructTest3) {
+  auto v = std::vector<int>{1, 2, 3, 4};
+  auto w = msd::vector(v.rbegin(), v.rend());
+  bool actual = std::is_same_v<decltype(w), typename msd::vector<int>> &&
+                w.size() == v.size();
+  actual = actual && std::equal(v.begin(), v.end(), w.crbegin(), w.crend());
+  actual = actual && std::equal(v.rbegin(), v.rend(), w.cbegin(), w.cend());
+  EXPECT_EQ(actual, true);
+}
+TEST(VectorTests, IteratorConstructTest4) {
+  int v[4] = {1, 2, 3, 4};
+  auto w = msd::vector(v, v + 4);
+  auto x = msd::vector{1, 2, 3, 4};
+  bool actual = std::is_same_v<decltype(w), typename msd::vector<int>>;
+  actual = actual && std::equal(v, v + 4, w.begin(), w.end());
+  actual = actual && std::equal(x.begin(), x.end(), w.begin(), w.end());
+  EXPECT_EQ(actual, true);
+}
+TEST(VectorTests, EmplaceTest) {
+  struct CopyTest {
+    bool copied = false;
+    bool moved = false;
+    CopyTest(const CopyTest &ct) { copied = true; }
+    CopyTest(CopyTest &&ct) { moved = true; }
+    int a_;
+    double b_;
+    int64_t c_;
+    CopyTest(int a, double b, int64_t c) : a_(a), b_(b), c_(c) {}
+  };
+  msd::vector<CopyTest> v(8);
+  v.emplace_back(1, 2.0, 3);
+  bool actual = !(v[0].moved || v[0].copied);
+  EXPECT_EQ(actual, true);
+  EXPECT_EQ(v[0].a_, 1);
+  EXPECT_EQ(v[0].b_, 2.0);
+  EXPECT_EQ(v[0].c_, 3);
+}
+TEST(VectorTests, SwapTest) {
+  msd::vector v1 = {1, 2, 3};
+  msd::vector v2 = {2, 3, 4};
+  msd::vector w1 = {1, 2, 3};
+  msd::vector w2 = {2, 3, 4};
+  std::swap(w1, w2);
+  v1.swap(v2);
+  EXPECT_EQ(v1 == w1, true);
+  EXPECT_EQ(v2 == w2, true);
+}
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

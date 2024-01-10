@@ -1,6 +1,8 @@
 #include "MSDCore/vector.hh"
 #include <iostream>
 #include <new>
+#include <list>
+#include "MSDCore/list.hh"
 
 struct Controllable {
   inline static int control = 5;
@@ -42,10 +44,16 @@ void test1() {
   std::cout << vv2.size() << std::endl;
 }
 
-int main() 
-  try {
-    test1();
-  } catch (std::bad_alloc &) {
-    std::cout << "Exception catched\n";
-  }
-
+int main() try {
+  std::list l = {1, 2, 3};
+  msd::list<int> ml;
+  for (auto &&i: l)
+    ml.push_back(i);
+  for (auto &&i: ml)
+    std::cout << i << " ";
+  std::cout << "\n";
+  bool actual = std::equal(l.begin(), l.end(), ml.begin(), ml.end());
+  test1();
+} catch (std::bad_alloc &) {
+  std::cout << "Exception catched\n";
+}
